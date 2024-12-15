@@ -1,10 +1,12 @@
-on: workflow_dispatch
-
 name: Build libcec
+
+permissions:
+  contents: write
 
 env:
   libcec_version: 6.0.2  # version of libcec this fork is based on
 
+on: workflow_dispatch
 
 jobs:
   build-libcec:

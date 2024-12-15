@@ -1,5 +1,11 @@
 on: workflow_dispatch
+
 name: Build libcec
+
+env:
+  libcec_version: 6.0.2  # version of libcec this fork is based on
+
+
 jobs:
   build-libcec:
     name: Build libcec
@@ -22,7 +28,7 @@ jobs:
           set -ex
           rm -rf /tmp/libcec-build-tmp
           mkdir /tmp/libcec-build-tmp
-          git clone --recursive --branch libcec-6.0.2 https://github.com/Pulse-Eight/libcec.git /tmp/libcec-build-tmp/libcec
+          git clone --recursive --branch libcec-${{ env.libcec_version }} https://github.com/Pulse-Eight/libcec.git /tmp/libcec-build-tmp/libcec
 
       - name: Build libcec (with RPi feature, unlike the one from apt repo)
         working-directory: /tmp/libcec-build-tmp/libcec/build
@@ -46,6 +52,32 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libcec-6.0.2-armv7-unknown-linux-gnueabihf
+          name: libcec-${{ env.libcec_version }}-armv7-unknown-linux-gnueabihf
           path: ${{ steps.build_output.outputs.binary_path }}
           if-no-files-found: error
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-libcec]
+    steps:
+      - name: Fetch build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: assets
+
+      - name: Compress build artifacts
+        working-directory: assets
+        run: |
+          mkdir --verbose ../release
+          find * -maxdepth 0 -type d  -print -exec zip -vr ../release/{}.zip {} \;
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: libcec-v${{ env.libcec_version }}
+          files: release/*.zip
+          fail_on_unmatched_files: true
+          make_latest: true
+          body: >
+            This release includes automated [libcec](https://github.com/Pulse-Eight/libcec)
+            builds for version ${{ env.libcec_version }}.

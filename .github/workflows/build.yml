@@ -20,14 +20,12 @@ jobs:
         run: |
             set -ex
             sudo rm -rf /tmp/libcec-build-tmp
-            sudo mkdir /tmp/libcec-build-tmp
+            mkdir /tmp/libcec-build-tmp
 
       - name: Checkout libcec
         working-directory: /tmp/libcec-build-tmp
         run: |
           set -ex
-          rm -rf /tmp/libcec-build-tmp
-          mkdir /tmp/libcec-build-tmp
           git clone --recursive --branch libcec-${{ env.libcec_version }} https://github.com/Pulse-Eight/libcec.git /tmp/libcec-build-tmp/libcec
 
       - name: Build libcec (with RPi feature, unlike the one from apt repo)

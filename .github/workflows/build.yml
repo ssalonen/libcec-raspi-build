@@ -10,15 +10,42 @@ jobs:
             set -ex
             sudo apt-get update
             sudo apt install -yq libp8-platform-dev libp8-platform2 cmake libudev-dev libxrandr-dev python3-dev swig git
-      - name: Build libcec (with RPi feature, unlike the one from apt repo)
+      - name: Prepare build directory
         run: |
             set -ex
             sudo rm -rf /tmp/libcec-build-tmp
             sudo mkdir /tmp/libcec-build-tmp
-            sudo git clone --recursive https://github.com/Pulse-Eight/libcec.git /tmp/libcec-build-tmp/libcec
-            sudo sh -c "cd /tmp/libcec-build-tmp/libcec && sudo git checkout libcec-6.0.2"
-            sudo mkdir /tmp/libcec-build-tmp/libcec/build
-            sudo sh -c "cd /tmp/libcec-build-tmp/libcec/build && sudo cmake -DRPI_INCLUDE_DIR=/opt/vc/include -DRPI_LIB_DIR=/opt/vc/lib .."
-            sudo sh -c "cd /tmp/libcec-build-tmp/libcec/build && sudo make -j4"
-            #sudo sh -c "cd /tmp/libcec-build-tmp/libcec/build && sudo make install"
-            #sudo ldconfig
+
+      - name: Checkout libcec
+        working-directory: /tmp/libcec-build-tmp
+        run: |
+          set -ex
+          rm -rf /tmp/libcec-build-tmp
+          mkdir /tmp/libcec-build-tmp
+          git clone --recursive --branch libcec-6.0.2 https://github.com/Pulse-Eight/libcec.git /tmp/libcec-build-tmp/libcec
+
+      - name: Build libcec (with RPi feature, unlike the one from apt repo)
+        working-directory: /tmp/libcec-build-tmp/libcec/build
+        run: |
+          set -ex
+          cmake -DRPI_INCLUDE_DIR=/opt/vc/include -DRPI_LIB_DIR=/opt/vc/lib ..
+          make -j4
+
+      - name: Collect binaries and headers
+        working-directory: /tmp/libcec-build-tmp/libcec/build
+        run: |
+          mkdir -p dist/include
+          find src/libcec \( \! -name '_*' -a \(  -name '*.a' -o -name '*.so' -o -name '*.dylib' \) \) -print -exec cp {} dist \;
+          find ../include -name '*.h' -print -exec cp {} dist/include \;
+
+      - name: Set output
+        id: build_output
+        shell: bash
+        run: echo "binary_path=/tmp/libcec-build-tmp/libcec/build/dist" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcec-6.0.2-armv7-unknown-linux-gnueabihf
+          path: ${{ steps.build_output.outputs.binary_path }}
+          if-no-files-found: error

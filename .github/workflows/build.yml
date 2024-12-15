@@ -14,6 +14,7 @@ jobs:
             sudo apt install -yq libp8-platform-dev libp8-platform2 cmake libudev-dev libxrandr-dev python3-dev swig git
       - name: Build libcec (with RPi feature, unlike the one from apt repo)
         run: |
+            set -ex
             sudo rm -rf /tmp/libcec-build-tmp
             sudo mkdir /tmp/libcec-build-tmp
             sudo git clone --recursive https://github.com/Pulse-Eight/libcec.git /tmp/libcec-build-tmp/libcec

@@ -3,7 +3,7 @@ name: Build libcec
 jobs:
   build-libcec:
     name: Build libcec
-    runs-on: armv7-raspi
+    runs-on:  [self-hosted, armv7, raspi]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

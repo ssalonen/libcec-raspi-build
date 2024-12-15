@@ -27,6 +27,7 @@ jobs:
         run: |
           set -ex
           git clone --recursive --branch libcec-${{ env.libcec_version }} https://github.com/Pulse-Eight/libcec.git /tmp/libcec-build-tmp/libcec
+          mkdir /tmp/libcec-build-tmp/libcec/build
 
       - name: Build libcec (with RPi feature, unlike the one from apt repo)
         working-directory: /tmp/libcec-build-tmp/libcec/build

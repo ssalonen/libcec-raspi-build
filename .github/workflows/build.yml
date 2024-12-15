@@ -5,8 +5,6 @@ jobs:
     name: Build libcec
     runs-on:  [self-hosted, armv7, raspi]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
       - name: Install libcec(-dev) and build dependencies
         run: |
             set -ex
